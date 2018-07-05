@@ -31,7 +31,7 @@ machine_resources = cf.get(section_name, "machine_resources")
 def for_df1():
     # 应用app表: 应用id/cpu占用量/内存占用/磁盘占用/P/M/PM等指标
     df1 = pd.read_csv(app_resources, header=None,
-                      names=list(["appid", "cpu", "mem", "disk", "P", "M", "PM"]))
+                      names=list(["appid", "cpu", "mem", "disk", "P", "M", "PM"]), encoding="utf-8")
     print(df1.dtypes)
     # appid    object
     # cpu      object
@@ -59,7 +59,7 @@ def for_df1():
 def for_df2():
     # 主机表 ：宿主机id/ cpu规格/mem规格/disk规格/P上限/M上限/PM上限
     df2 = pd.read_csv(machine_resources, header=None, names=list(
-        ["machineid", "cpu", "mem", "disk", "P", "M", "PM"]))
+        ["machineid", "cpu", "mem", "disk", "P", "M", "PM"]), encoding="utf-8")
     # df2 = pd.DataFrame(pd.read_csv("../data/scheduling_preliminary_machine_resources_20180606.csv", header=None),columns=list(["machineid", "cpu", "mem", "disk", "P", "M", "PM"]))
     print(df2.dtypes)
     # machineid    object
@@ -84,7 +84,7 @@ def for_df2():
 def for_df3():
     # 主机machine/实例instance/应用app 关系表
     df3 = pd.read_csv(instance_deploy, header=None,
-                      names=list(["instanceid", "appid", "machineid"]))
+                      names=list(["instanceid", "appid", "machineid"]), encoding="utf-8")
     print(df3.dtypes)
     print("df数据大小：", df3.shape)
     print("instance唯一数量：", df3["instanceid"].unique().shape)
@@ -95,7 +95,7 @@ def for_df3():
 def for_df4():
     # 主机和实例表。部署appid1的insterference最多可以部署n个appid2
     df = pd.read_csv(app_interference, header=None,
-                     names=list(["appid1", "appid2", "max_interference"]))
+                     names=list(["appid1", "appid2", "max_interference"]), encoding="utf-8")
     # 查看数据类型
     # print(df.dtypes)
     print("df数据大小：", df.shape)
