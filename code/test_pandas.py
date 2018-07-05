@@ -20,4 +20,14 @@ def t2():
     print(obj.dtypes)
     print(uniques.shape)
 
+def t3():
+    df=pd.DataFrame()
+    df2=pd.read_csv()
+    df3=pd.Series()
+    pd.concat()
+    pd.to_datetime()
+    pd.merge()
+    pd.Timestamp
+
+
 t2()

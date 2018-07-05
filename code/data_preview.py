@@ -38,6 +38,7 @@ def for_df1():
     # [5 rows x 98 columns]
     df1["mem"]=tmp.T.mean().T #转置,求均值，再转置回来，这样求得一行的均值。
     print(df1.head())
+    print("总共应用：",df1["appid"].unique().shape)
 
 def for_df2():
     # 主机表 ：宿主机id/ cpu规格/mem规格/disk规格/P上限/M上限/PM上限
@@ -56,20 +57,27 @@ def for_df2():
     # (6000, 7)
     print(df2.head())
     # machine_3   32   64   600  7  3   7
+    print("总共主机：",df2["machineid"].unique().shape)
+    # 6000
+
+    # 这里主机主要就两类：
+    # machine_1	32	64	600  	7	3	7    数量：3000
+    # machine_2	92	288	1024	7	7	9   数量：3000
 
 def for_df3():
     # 主机machine/实例instance/应用app 关系表
-    df2=pd.read_csv("../data/scheduling_preliminary_instance_deploy_20180606.csv", header=None,names=list(["instanceid", "appid", "machineid"]))
-    print(df2.dtypes)
-    print("df数据大小：",df2.shape)
-    print("instance唯一数量：",df2["instanceid"].unique().shape)
+    df3=pd.read_csv("../data/scheduling_preliminary_instance_deploy_20180606.csv", header=None,names=list(["instanceid", "appid", "machineid"]))
+    print(df3.dtypes)
+    print("df数据大小：",df3.shape)
+    print("instance唯一数量：",df3["instanceid"].unique().shape)
     # print(df2["instanceid"])
+    print("总共实例：",df3["instanceid"].unique().shape)
 
 
 
 def for_df4():
     # 主机和实例表。部署appid1的insterference最多可以部署n个appid2
-    df=pd.DataFrame(pd.read_csv("../data/scheduling_preliminary_app_interference_20180606.csv",header=None),columns=list(["appid1","appid2","max_interference"]))
+    df=pd.read_csv("../data/scheduling_preliminary_app_interference_20180606.csv",header=None,names=list(["appid1","appid2","max_interference"]))
     # 查看数据类型
     # print(df.dtypes)
     print("df数据大小：",df.shape)
@@ -97,6 +105,7 @@ def for_df4():
     # 描述性统计
     print("数据预览：",df.describe())
 
-    plt.plot(df["max_machine"])
+    plt.plot(df["max_interference"])
     plt.savefig("../submit/fig1.png")
 
+for_df4()
