@@ -7,6 +7,7 @@
 '''
 import pandas as pd
 
+
 def t1():
     a = [['a', '1.2', '4.2'], ['b', '70', '0.03'], ['x', '5', '0']]
     df = pd.DataFrame(a, columns=list("ABC"))
@@ -54,4 +55,17 @@ def t5():
     ser2.values
 
 
-t5()
+def t6():
+    df = pd.DataFrame([{"A": "11", "B": "12"}, {"A": "111", "B": "121"}, {"A": "1111", "B": "1211"}])
+
+    print(df)
+    print(df.columns.size)  # 列数 2
+    h, l = df.shape
+    print(h, l)
+    print(df.iloc[:, 0].size)  # 行数 3
+    print(df.ix[[0]].index.values[0])  # 索引值 0
+    print(df.ix[[0]].values[0][0])  # 第一行第一列的值 11
+    print(df.ix[[1]].values[0][1])  # 第二行第二列的值 121
+
+
+t6()

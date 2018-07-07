@@ -10,9 +10,12 @@
 import matplotlib
 
 matplotlib.use('Agg')
+
 import pandas as pd
 import matplotlib.pyplot as plt
 from configparser import ConfigParser
+import time
+import libs.save_result
 
 cf = ConfigParser()
 config_path = "../conf/config.ini"
@@ -72,14 +75,32 @@ def restrictApp(instance, deploy_list):
 
 # 执行部署方案
 def deplay():
-    mlength = df3["instanceid"].size()
-    while mlength > 0:
-        deployInstance(mlength)
+    print("------------开始部署啦--------------")
+    start = time.time()
+    row, column = df3.shape
+    while row > 0:
+        deployInstance(row, j)
+        # 整个instace都遍历了，第j主机无法再放入一个，所以添加j+1主机
+        row, column = df3.shape
+        j = j + 1
 
-    result.to_csv("../submit/xx.csv")
+    # 部署完事
+    print("------------部署完啦--------------")
+    end = time.time()
+    print("总共耗时：", end - start, "秒")
+    print("总共需要主机数：", j)
+    print("部署方案前几条示意：", result.head())
+    libs.save_result.save_result(result)
 
 
-def deployInstance(mlength):
+def deployInstance(mlength, j):
+    '''
+    根据限制部署实例到主机上
+    :param mlength: 根据剩余的instance数量循环
+    :param j: 第j台主机
+    :return: 暂未定返回值，None
+    '''
+    global is_deploy, tem_disk, tem_mem, tem_cpu, tem_P, tem_M, tem_PM
     for i in range(0, mlength):
         tem_disk = tem_disk + df3["disk"][i]  # 当前磁盘消耗
         tem_mem = tem_mem + df3["mem"][i]
@@ -88,9 +109,9 @@ def deployInstance(mlength):
         tem_M = tem_M + df3["M"][i]
         tem_PM = tem_PM + df3["PM"][i]
 
-        if tem_disk < tmp_stand_disk1:  # 磁盘够
-            # if 满足限制表条件，则把当前实例部署到这台主机上。
-            if is_deploy == True:
+        # if 满足限制表条件，则把当前实例部署到这台主机上。
+        if is_deploy == True:
+            if tem_disk < tmp_stand_disk1:  # 磁盘够
                 if restrictApp(instance=df3["instanceid"], deploy_list=deploy_list):
                     if tem_mem < tmp_stand_mem1:  # 内存够
                         if tem_cpu < tmp_stand_cpu1:  # CPU够
@@ -98,12 +119,11 @@ def deployInstance(mlength):
                                 if tem_P < tmp_stand_P:
                                     if tem_PM < tmp_stand_PM1:
                                         result["machine"][i] = "machine_" + i
-            else:
-                # 主机j没有部署实例，则先部署一个
-                result["machine"][i] = "machine_" + i
-                is_deploy = True
-    # 整个instace都遍历了，第j主机无法再放入一个，所以添加j+1主机
-    j = j + 1
+        else:
+            # 主机j没有部署实例，则先部署一个
+            result["machine"][i] = "machine_" + i
+            is_deploy = True
+    is_deploy = False
 
 
 def plotGroup():  # df3新建一列
