@@ -94,11 +94,11 @@ def for_df3():
 
 def for_df4():
     # 主机和实例表。部署appid1的insterference最多可以部署n个appid2
-    df = pd.read_csv(app_interference, header=None,
+    df4 = pd.read_csv(app_interference, header=None,
                      names=list(["appid1", "appid2", "max_interference"]), encoding="utf-8")
     # 查看数据类型
     # print(df.dtypes)
-    print("df数据大小：", df.shape)
+    print("df数据大小：", df4.shape)
 
     # 查看头尾部数据
     # app_8361  app_2163  0
@@ -121,9 +121,9 @@ def for_df4():
     # 第三列
 
     # 描述性统计
-    print("数据预览：", df.describe())
+    print("数据预览：", df4.describe())
 
-    plt.plot(df["max_interference"])
+    plt.plot(df4["max_interference"])
     plt.savefig("../submit/fig1.png")
 
 
