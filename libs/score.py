@@ -14,7 +14,6 @@ flag = True
 alpha = 10
 beta = 0.5
 
-
 def getScore():
     '''
     计算得分

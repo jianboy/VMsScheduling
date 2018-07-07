@@ -49,5 +49,3 @@ def read():
     cf.read(config_file)
     print(cf.get(section_name, "app_interference"))
 
-
-write()
