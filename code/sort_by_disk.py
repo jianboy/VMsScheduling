@@ -90,7 +90,7 @@ def restrictApps(instance, deploy_list):
                 if ct[instance] + 1 > tmp["max_interference"]:
                     return False
             else:
-                #在限制表中找不到限制条件
+                # 在限制表中找不到限制条件
                 return True
 
 
@@ -105,13 +105,16 @@ def deploy():
     while row > 0:
         deployInstance(row)
         # 整个instace都遍历了，第j主机无法再放入一个，所以添加j+1主机
+        df3 = df3[df3["isdeploy"] == False]
+        # 重建行索引
+        # df3.reindex()
+        # df3.iloc[:, 0].reset_index(drop=True)
         row, column = df3.shape
         j = j + 1
-        # j++之后表示新建主机，所以新主机没有部署任何实例，为false
+        # j++之后表示新建主机，所以新主机没有部署任何实例，为false，然后初始化所有其他参数
         is_deploy = False
         tem_pre_disk = tem_pre_mem = tem_pre_cpu = tem_pre_P = tem_pre_M = tem_pre_PM = 0
         tem_disk = tem_mem = tem_cpu = tem_P = tem_M = tem_PM = 0
-        df3 = df3[df3["isdeploy"] == False]
         deploy_list = list()
 
     # 部署完事
