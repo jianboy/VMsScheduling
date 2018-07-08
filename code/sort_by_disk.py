@@ -35,7 +35,6 @@ df1 = pd.read_csv(app_resources, encoding="utf-8")
 # instance
 df3 = pd.read_csv(instance)
 
-print(df3["cpu"][0])
 # print(df3["cpu"].value_counts())
 # print(df3.head())
 df3["cpu"] = df3["cpu"].astype("float")
@@ -45,7 +44,7 @@ df3["M"] = df3["M"].astype("float")
 df3["P"] = df3["P"].astype("float")
 df3["PM"] = df3["PM"].astype("float")
 
-df3["isdploy"] = False
+df3["isdeploy"] = False
 # machine
 # 其实就两类，所以就不需要导入数据了。
 
@@ -96,7 +95,7 @@ def restrictApps(instance, deploy_list):
 
 
 # 执行部署方案
-def deplay():
+def deploy():
     global j, is_deploy, tem_mem, tem_cpu, tem_disk, tem_P, tem_M, tem_PM, tem_pre_disk, tem_pre_mem, \
         tem_pre_cpu, tem_pre_P, tem_pre_M, tem_pre_PM, result, df3, deploy_list
 
@@ -112,7 +111,7 @@ def deplay():
         is_deploy = False
         tem_pre_disk = tem_pre_mem = tem_pre_cpu = tem_pre_P = tem_pre_M = tem_pre_PM = 0
         tem_disk = tem_mem = tem_cpu = tem_P = tem_M = tem_PM = 0
-        df3 = df3[df3["isdeplay"] == False]
+        df3 = df3[df3["isdeploy"] == False]
         deploy_list = list()
 
     # 部署完事
@@ -160,7 +159,7 @@ def deployInstance(row):
                                             tem_P = tem_P + df3["P"][i]
                                             tem_M = tem_M + df3["M"][i]
                                             tem_PM = tem_PM + df3["PM"][i]
-                                            df3.loc[i, "isdploy"] = True
+                                            df3.loc[i, "isdeploy"] = True
                                             deploy_list.append(df3["instanceid"][i])
 
             else:
@@ -173,9 +172,9 @@ def deployInstance(row):
                 tem_P = tem_P + df3["P"][i]
                 tem_M = tem_M + df3["M"][i]
                 tem_PM = tem_PM + df3["PM"][i]
-                df3.loc[i, "isdploy"] = True
+                df3.loc[i, "isdeploy"] = True
                 deploy_list.append(df3["instanceid"][i])
-                # df3["isdploy"][i] = True
+                # df3["isdeploy"][i] = True
                 is_deploy = True
         else:  # 使用大主机
             if is_deploy == True:
@@ -196,7 +195,7 @@ def deployInstance(row):
                                             tem_P = tem_P + df3["P"][i]
                                             tem_M = tem_M + df3["M"][i]
                                             tem_PM = tem_PM + df3["PM"][i]
-                                            df3.loc[i, "isdploy"] = True
+                                            df3.loc[i, "isdeploy"] = True
                                             deploy_list.append(df3["instanceid"][i])
 
             else:
@@ -209,7 +208,7 @@ def deployInstance(row):
                 tem_P = tem_P + df3["P"][i]
                 tem_M = tem_M + df3["M"][i]
                 tem_PM = tem_PM + df3["PM"][i]
-                df3.loc[i, "isdploy"] = True
+                df3.loc[i, "isdeploy"] = True
                 deploy_list.append(df3["instanceid"][i])
                 is_deploy = True
 
@@ -232,4 +231,4 @@ def plotGroup():  # df3新建一列
 
 
 # 跑
-deplay()
+deploy()

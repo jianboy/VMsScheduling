@@ -11,14 +11,7 @@ df = pd.DataFrame([{"A": "11", "B": "12"}, {"A": "1111", "B": "1211"}])
 df["isdploy"] = False
 df.loc[0, "isdploy"] = True
 
-
-
-
-
-
-
-
-
+df = df[df["isdploy"] == False]
 
 
 
