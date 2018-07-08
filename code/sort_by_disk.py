@@ -106,10 +106,8 @@ def deploy():
         deployInstance(row)
         # 整个instace都遍历了，第j主机无法再放入一个，所以添加j+1主机
         df3 = df3[df3["isdeploy"] == False]
-        # 重建行索引
-        # df3.reindex()
-        # df3.iloc[:, 0].reset_index(drop=True)
         row, column = df3.shape
+        df3 = df3.reset_index(drop=True)
         j = j + 1
         # j++之后表示新建主机，所以新主机没有部署任何实例，为false，然后初始化所有其他参数
         is_deploy = False
