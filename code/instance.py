@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-按照app对instance分类
+按照app对instance分类,存储一个新的instance.csv文件，后面添加了cpu,mem，disk,P,M,PM等几列
 @Auther :liuyuqi.gov@msn.cn
 @Time :2018/7/6 16:13
 @File :instance.py
@@ -18,13 +18,12 @@ section_name = "data_file_name"
 cf.read(config_path)
 
 app_interference = cf.get(section_name, "app_interference")
-app_resources = cf.get(section_name, "app_resources")
+app = cf.get(section_name, "app")
 instance_deploy = cf.get(section_name, "instance_deploy")
 machine_resources = cf.get(section_name, "machine_resources")
 
 # app
-df1 = pd.read_csv(app_resources, header=None,
-                  names=list(["appid", "cpu", "mem", "disk", "P", "M", "PM"]), encoding="utf-8")
+df1 = pd.read_csv(app, encoding="utf-8")
 
 # instance
 df3 = pd.read_csv(instance_deploy, header=None,
@@ -38,7 +37,7 @@ print(type(group1))
 # plt.savefig("../submit/group1.jpg")
 
 # 找到每个instance消耗的disk
-
+df3["cpu"] = None
 df3["disk"] = None
 df3["mem"] = None
 df3["P"] = None
@@ -47,8 +46,8 @@ df3["PM"] = None
 
 for i in range(0, int(cf.get("table_size", "instance_size"))):
     # df1[df1["appid"] == df3["appid"][i]]["disk"]返回一个pd.Series对象（列表），其实只有一个值，需要选定第一个即可
-    df3["mem"][i] = df1[df1["appid"] == df3["appid"][i]]["mem"].values[0]
-    df3["cpu"][i] = df1[df1["appid"] == df3["appid"][i]]["cpu"].values[0]
+    df3["mem"][i] = df1[df1["appid"] == df3["appid"][i]]["mem_avg"].values[0]
+    df3["cpu"][i] = df1[df1["appid"] == df3["appid"][i]]["cpu_avg"].values[0]
     df3["disk"][i] = df1[df1["appid"] == df3["appid"][i]]["disk"].values[0]
     df3["P"][i] = df1[df1["appid"] == df3["appid"][i]]["P"].values[0]
     df3["M"][i] = df1[df1["appid"] == df3["appid"][i]]["M"].values[0]

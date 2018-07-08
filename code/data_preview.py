@@ -9,6 +9,7 @@
 # 后台做图，不需要GUI需要在头部第一行加入下面两行代码
 # %matplotlib inline   jupyter中加入这一行
 import matplotlib
+
 matplotlib.use('Agg')
 
 # 数据预览
@@ -27,6 +28,7 @@ app_interference = cf.get(section_name, "app_interference")
 app_resources = cf.get(section_name, "app_resources")
 instance_deploy = cf.get(section_name, "instance_deploy")
 machine_resources = cf.get(section_name, "machine_resources")
+
 
 def for_df1():
     # 应用app表: 应用id/cpu占用量/内存占用/磁盘占用/P/M/PM等指标
@@ -95,7 +97,7 @@ def for_df3():
 def for_df4():
     # 主机和实例表。部署appid1的insterference最多可以部署n个appid2
     df4 = pd.read_csv(app_interference, header=None,
-                     names=list(["appid1", "appid2", "max_interference"]), encoding="utf-8")
+                      names=list(["appid1", "appid2", "max_interference"]), encoding="utf-8")
     # 查看数据类型
     # print(df.dtypes)
     print("df数据大小：", df4.shape)
@@ -127,4 +129,8 @@ def for_df4():
     plt.savefig("../submit/fig1.png")
 
 
-for_df4()
+def seeInstance():
+    df4 = pd.read_csv("../data/instance.csv", header=None, encoding="utf-8",low_memory=False)
+    df4.head()
+
+seeInstance()

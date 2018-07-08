@@ -5,6 +5,7 @@
 @Time :2018/7/5 3:08
 @File :test_pandas.py
 '''
+
 import pandas as pd
 
 
@@ -68,4 +69,46 @@ def t6():
     print(df.ix[[1]].values[0][1])  # 第二行第二列的值 121
 
 
-t6()
+def t7():
+    '''
+    增加一行/一列
+    :return:
+    '''
+    df = pd.DataFrame([{"A": "11", "B": "12"}, {"A": "1111", "B": "1211"}])
+    # df.insert(value=list([22, 33]))
+    df = df.append(pd.DataFrame([{"A": "1133", "B": "1332"}]))
+    print(df)
+
+    # 增加一列：
+    df = pd.DataFrame([{"A": "11", "B": "12"}, {"A": "1111", "B": "1211"}])
+    df["is"] = False
+    print(df)
+
+
+def t8():
+    # 修改值不能直接引用：df3["mem"][i]，而需要df3.loc["mem"][i]
+    df = pd.DataFrame([{"A": "11", "B": "12"}, {"A": "1111", "B": "1211"}])
+    df["is"] = False
+    # df["is"][0] = True
+    # df.loc[0][2] = True
+    # df.loc[:, "is"] = True
+    df.loc[0, "is"] = True
+    print(df)
+
+
+t8()
+
+# result = pd.DataFrame(columns=list(["instanceid", "machineid"]), data=list())
+
+# df = pd.DataFrame({'a': list(range(100)), 'b': [random.random() for i in range(100)]})
+# index = pd.MultiIndex.from_product([list('abcd'), list(range(25))])
+# df.index = index
+# print(df.head())
+# df.loc[('a', -1), :] = None
+# df.tail()
+#
+# data = pd.DataFrame({'a':[1,2,3], 'b':[4,5,6]})
+# data.index = pd.MultiIndex.from_tuples([('a', 1), ('b', 1), ('c', 1)])
+# data
+# new_df = df.append(data)
+# new_df.tail()

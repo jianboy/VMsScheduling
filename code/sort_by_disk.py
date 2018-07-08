@@ -17,6 +17,10 @@ from configparser import ConfigParser
 import time
 import libs.save_result
 
+# A value is trying to be set on a copy of a slice from a DataFrame.
+pd.set_option('mode.chained_assignment', 'raise')
+# sys.path.append("/home/ubuntu/ServerManager")
+
 cf = ConfigParser()
 config_path = "../conf/config.ini"
 section_name = "data_file_name"
@@ -24,17 +28,24 @@ cf.read(config_path)
 
 app_interference = cf.get(section_name, "app_interference")
 app_resources = cf.get(section_name, "app_resources")
-instance_deploy = cf.get(section_name, "instance_deploy")
-machine_resources = cf.get(section_name, "machine_resources")
-app = cf.get(section_name, "app")
 instance = cf.get(section_name, "instance")
 # app
 df1 = pd.read_csv(app_resources, encoding="utf-8")
 
 # instance
-df3 = pd.read_csv(instance_deploy, header=None,
-                  names=list(["instanceid", "appid", "machineid"]))
+df3 = pd.read_csv(instance)
 
+print(df3["cpu"][0])
+# print(df3["cpu"].value_counts())
+# print(df3.head())
+df3["cpu"] = df3["cpu"].astype("float")
+df3["disk"] = df3["disk"].astype("float")
+df3["mem"] = df3["mem"].astype("float")
+df3["M"] = df3["M"].astype("float")
+df3["P"] = df3["P"].astype("float")
+df3["PM"] = df3["PM"].astype("float")
+
+df3["isdploy"] = False
 # machine
 # 其实就两类，所以就不需要导入数据了。
 
@@ -42,8 +53,9 @@ df3 = pd.read_csv(instance_deploy, header=None,
 df4 = pd.read_csv(app_interference, header=None,
                   names=list(["appid1", "appid2", "max_interference"]), encoding="utf-8")
 
-result = pd.DataFrame(columns=list(["instanceid"], "machineid"))
+result = pd.DataFrame(columns=list(["instanceid", "machineid"]), data=list())
 
+tem_pre_disk = tem_pre_mem = tem_pre_cpu = tem_pre_P = tem_pre_M = tem_pre_PM = 0
 tem_disk = tem_mem = tem_cpu = tem_P = tem_M = tem_PM = 0
 tmp_stand_cpu1 = 32
 tmp_stand_mem1 = 64
@@ -66,23 +78,42 @@ deploy_list = list()  # 主机j部署的instanceid实例
 
 
 # 各app之间的限制
-def restrictApp(instance, deploy_list):
-    # df4["appid1"]
-    # df4["appid2"]
-
-    return True
+def restrictApps(instance, deploy_list):
+    len_list = len(deploy_list)
+    if len_list == 0:
+        return True
+    else:
+        ct = pd.Series(deploy_list).value_counts()
+        for k, v in ct.items():
+            tmp = df4.loc[(df4["appid1"] == k) & (df4["appid2"] == instance)]
+            row, col = tmp.shape
+            if row > 0:
+                if ct[instance] + 1 > tmp["max_interference"]:
+                    return False
+            else:
+                #在限制表中找不到限制条件
+                return True
 
 
 # 执行部署方案
 def deplay():
+    global j, is_deploy, tem_mem, tem_cpu, tem_disk, tem_P, tem_M, tem_PM, tem_pre_disk, tem_pre_mem, \
+        tem_pre_cpu, tem_pre_P, tem_pre_M, tem_pre_PM, result, df3, deploy_list
+
     print("------------开始部署啦--------------")
     start = time.time()
     row, column = df3.shape
     while row > 0:
-        deployInstance(row, j)
+        deployInstance(row)
         # 整个instace都遍历了，第j主机无法再放入一个，所以添加j+1主机
         row, column = df3.shape
         j = j + 1
+        # j++之后表示新建主机，所以新主机没有部署任何实例，为false
+        is_deploy = False
+        tem_pre_disk = tem_pre_mem = tem_pre_cpu = tem_pre_P = tem_pre_M = tem_pre_PM = 0
+        tem_disk = tem_mem = tem_cpu = tem_P = tem_M = tem_PM = 0
+        df3 = df3[df3["isdeplay"] == False]
+        deploy_list = list()
 
     # 部署完事
     print("------------部署完啦--------------")
@@ -93,37 +124,94 @@ def deplay():
     libs.save_result.save_result(result)
 
 
-def deployInstance(mlength, j):
+def deployInstance(row):
     '''
     根据限制部署实例到主机上
-    :param mlength: 根据剩余的instance数量循环
+    :param row: 根据剩余的instance数量循环
     :param j: 第j台主机
     :return: 暂未定返回值，None
     '''
-    global is_deploy, tem_disk, tem_mem, tem_cpu, tem_P, tem_M, tem_PM
-    for i in range(0, mlength):
-        tem_disk = tem_disk + df3["disk"][i]  # 当前磁盘消耗
-        tem_mem = tem_mem + df3["mem"][i]
-        tem_cpu = tem_cpu + df3["cpu"][i]
-        tem_P = tem_P + df3["P"][i]
-        tem_M = tem_M + df3["M"][i]
-        tem_PM = tem_PM + df3["PM"][i]
+    global is_deploy, tem_mem, tem_cpu, tem_disk, tem_P, tem_M, tem_PM, tem_pre_disk, tem_pre_mem, tem_pre_cpu, tem_pre_P, tem_pre_M, tem_pre_PM, result, j, df3, deploy_list
+    for i in range(0, row):
+        tem_pre_cpu = tem_cpu + df3["cpu"][i]
+        tem_pre_mem = tem_mem + df3["mem"][i]
+        tem_pre_disk = tem_disk + df3["disk"][i]  # 当前磁盘消耗
+        tem_pre_P = tem_P + df3["P"][i]
+        tem_pre_M = tem_M + df3["M"][i]
+        tem_pre_PM = tem_PM + df3["PM"][i]
 
         # if 满足限制表条件，则把当前实例部署到这台主机上。
-        if is_deploy == True:
-            if tem_disk < tmp_stand_disk1:  # 磁盘够
-                if restrictApp(instance=df3["instanceid"], deploy_list=deploy_list):
-                    if tem_mem < tmp_stand_mem1:  # 内存够
-                        if tem_cpu < tmp_stand_cpu1:  # CPU够
-                            if tem_M < tmp_stand_M1:
-                                if tem_P < tmp_stand_P:
-                                    if tem_PM < tmp_stand_PM1:
-                                        result["machine"][i] = "machine_" + i
-        else:
-            # 主机j没有部署实例，则先部署一个
-            result["machine"][i] = "machine_" + i
-            is_deploy = True
-    is_deploy = False
+        if j < 3000:  # 使用小主机
+            if is_deploy == True:
+                if tem_pre_disk < tmp_stand_disk1:  # 磁盘够
+                    if restrictApps(instance=df3["instanceid"][i], deploy_list=deploy_list):
+                        if tem_pre_mem < tmp_stand_mem1:  # 内存够
+                            if tem_pre_cpu < tmp_stand_cpu1:  # CPU够
+                                if tem_pre_M < tmp_stand_M1:
+                                    if tem_pre_P < tmp_stand_P:
+                                        if tem_pre_PM < tmp_stand_PM1:
+                                            # 条件都满足，则把instance放入主机，同时df3表中去掉这个部署好的一行
+                                            result = result.append(pd.DataFrame(
+                                                [{"instanceid": df3["instanceid"][i],
+                                                  "machineid": "machine_" + str(j)}]))
+                                            tem_disk = tem_disk + df3["disk"][i]
+                                            tem_mem = tem_mem + df3["mem"][i]
+                                            tem_cpu = tem_cpu + df3["cpu"][i]
+                                            tem_P = tem_P + df3["P"][i]
+                                            tem_M = tem_M + df3["M"][i]
+                                            tem_PM = tem_PM + df3["PM"][i]
+                                            df3.loc[i, "isdploy"] = True
+                                            deploy_list.append(df3["instanceid"][i])
+
+            else:
+                # 主机j没有部署实例，则先部署一个
+                result = result.append(
+                    pd.DataFrame([{"instanceid": df3["instanceid"][i], "machineid": "machine_" + str(j)}]))
+                tem_disk = tem_disk + df3["disk"][i]
+                tem_mem = tem_mem + df3["mem"][i]
+                tem_cpu = tem_cpu + df3["cpu"][i]
+                tem_P = tem_P + df3["P"][i]
+                tem_M = tem_M + df3["M"][i]
+                tem_PM = tem_PM + df3["PM"][i]
+                df3.loc[i, "isdploy"] = True
+                deploy_list.append(df3["instanceid"][i])
+                # df3["isdploy"][i] = True
+                is_deploy = True
+        else:  # 使用大主机
+            if is_deploy == True:
+                if tem_pre_disk < tmp_stand_disk2:  # 磁盘够
+                    if restrictApps(instance=df3["instanceid"][i], deploy_list=deploy_list):
+                        if tem_pre_mem < tmp_stand_mem2:  # 内存够
+                            if tem_pre_cpu < tmp_stand_cpu2:  # CPU够
+                                if tem_pre_M < tmp_stand_M2:
+                                    if tem_pre_P < tmp_stand_P:
+                                        if tem_pre_PM < tmp_stand_PM2:
+                                            # 条件都满足，则把instance放入主机
+                                            result = result.append(pd.DataFrame(
+                                                [{"instanceid": df3["instanceid"][i],
+                                                  "machineid": "machine_" + str(j)}]))
+                                            tem_disk = tem_disk + df3["disk"][i]
+                                            tem_mem = tem_mem + df3["mem"][i]
+                                            tem_cpu = tem_cpu + df3["cpu"][i]
+                                            tem_P = tem_P + df3["P"][i]
+                                            tem_M = tem_M + df3["M"][i]
+                                            tem_PM = tem_PM + df3["PM"][i]
+                                            df3.loc[i, "isdploy"] = True
+                                            deploy_list.append(df3["instanceid"][i])
+
+            else:
+                # 主机j没有部署实例，则先部署一个
+                result = result.append(
+                    pd.DataFrame([{"instanceid": df3["instanceid"][i], "machineid": "machine_" + str(j)}]))
+                tem_disk = tem_disk + df3["disk"][i]
+                tem_mem = tem_mem + df3["mem"][i]
+                tem_cpu = tem_cpu + df3["cpu"][i]
+                tem_P = tem_P + df3["P"][i]
+                tem_M = tem_M + df3["M"][i]
+                tem_PM = tem_PM + df3["PM"][i]
+                df3.loc[i, "isdploy"] = True
+                deploy_list.append(df3["instanceid"][i])
+                is_deploy = True
 
 
 def plotGroup():  # df3新建一列
@@ -141,3 +229,7 @@ def plotGroup():  # df3新建一列
     # 找到每个instance消耗的disk
 
     # df3["disk"] =
+
+
+# 跑
+deplay()

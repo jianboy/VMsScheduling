@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 # 数据预览
 from configparser import ConfigParser
 import libs.save_conf
-
+from libs.mlogging import Log
 
 # step1: 数据参数初始化
 def getConfig():
