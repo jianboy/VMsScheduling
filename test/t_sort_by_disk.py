@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
+由于数据很大，测试使用部分数据！
 按照磁盘占用率从大到小装箱，即按照磁盘先用完为止进行分配实例到主机。
 @Auther :liuyuqi.gov@msn.cn
 @Time :2018/7/7 0:43
@@ -13,27 +14,11 @@ matplotlib.use('Agg')
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from configparser import ConfigParser
 import time
 import libs.save_result
 
-# A value is trying to be set on a copy of a slice from a DataFrame.
-pd.set_option('mode.chained_assignment', 'raise')
-# sys.path.append("/home/ubuntu/ServerManager")
-
-cf = ConfigParser()
-config_path = "../conf/config.ini"
-section_name = "data_file_name"
-cf.read(config_path)
-
-app_interference = cf.get(section_name, "app_interference")
-app_resources = cf.get(section_name, "app_resources")
-instance = cf.get(section_name, "instance")
-# app
-df1 = pd.read_csv(app_resources, encoding="utf-8")
-
-# instance
-df3 = pd.read_csv(instance)
+df1 = pd.read_csv("../data/scheduling_preliminary_app_resources_20180606 - 副本.csv", encoding="utf-8")
+df3 = pd.read_csv("../data/test-instance.csv")
 
 # print(df3["cpu"].value_counts())
 # print(df3.head())
@@ -212,6 +197,24 @@ def deployInstance(row):
                 df3.loc[i, "isdeploy"] = True
                 deploy_list.append(df3["instanceid"][i])
                 is_deploy = True
+
+
+def plotGroup():  # df3新建一列
+    df3["disk"] = None
+    for i in range(0, 68219):
+        df3["disk"][i] = lambda x: x[i], df1["disk"]
+
+    # instance分类统计
+    group1 = df3.groupby("appid").count()
+    print(type(group1))
+    print(group1["instanceid"].sort_values(ascending=False))
+    plt.plot(group1["instanceid"].sort_values(ascending=False))
+    plt.savefig("../submit/group1.jpg")
+
+    # 找到每个instance消耗的disk
+
+    # df3["disk"] =
+
 
 # 跑
 deploy()
