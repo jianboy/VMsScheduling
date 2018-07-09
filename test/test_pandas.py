@@ -100,8 +100,7 @@ def t8():
 def t9():
     df = pd.DataFrame({'a': [1, 2, 3], 'b': [3, 4, 5]})
     for row in df.itertuples():
-        # print("the index", row.Index)
-        print(row)
+        print("the index", row.Index)
     print("sum of row", row.a + row.b)
 
 

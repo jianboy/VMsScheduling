@@ -12,14 +12,9 @@ import matplotlib
 matplotlib.use('Agg')
 
 import pandas as pd
-import matplotlib.pyplot as plt
 from configparser import ConfigParser
 import time
 import libs.save_result
-
-# A value is trying to be set on a copy of a slice from a DataFrame.
-pd.set_option('mode.chained_assignment', 'raise')
-# sys.path.append("/home/ubuntu/ServerManager")
 
 cf = ConfigParser()
 config_path = "../conf/config.ini"
@@ -35,8 +30,6 @@ df1 = pd.read_csv(app_resources, encoding="utf-8")
 # instance
 df3 = pd.read_csv(instance)
 
-# print(df3["cpu"].value_counts())
-# print(df3.head())
 df3["cpu"] = df3["cpu"].astype("float")
 df3["disk"] = df3["disk"].astype("float")
 df3["mem"] = df3["mem"].astype("float")
@@ -103,7 +96,7 @@ def deploy():
     start = time.time()
     row, column = df3.shape
     while row > 0:
-        deployInstance(row)
+        deployInstance()
         # 整个instace都遍历了，第j主机无法再放入一个，所以添加j+1主机
         df3 = df3[df3["isdeploy"] == False]
         row, column = df3.shape
@@ -124,7 +117,7 @@ def deploy():
     libs.save_result.save_result(result)
 
 
-def deployInstance(row):
+def deployInstance():
     '''
     根据限制部署实例到主机上
     :param row: 根据剩余的instance数量循环
@@ -132,19 +125,20 @@ def deployInstance(row):
     :return: 暂未定返回值，None
     '''
     global is_deploy, tem_mem, tem_cpu, tem_disk, tem_P, tem_M, tem_PM, tem_pre_disk, tem_pre_mem, tem_pre_cpu, tem_pre_P, tem_pre_M, tem_pre_PM, result, j, df3, deploy_list
-    for i in range(0, row):
-        tem_pre_cpu = tem_cpu + df3["cpu"][i]
-        tem_pre_mem = tem_mem + df3["mem"][i]
-        tem_pre_disk = tem_disk + df3["disk"][i]  # 当前磁盘消耗
-        tem_pre_P = tem_P + df3["P"][i]
-        tem_pre_M = tem_M + df3["M"][i]
-        tem_pre_PM = tem_PM + df3["PM"][i]
+    for row in df3.itertuples():
+        i = row.Index
+        tem_pre_cpu = tem_cpu + row.cpu
+        tem_pre_mem = tem_mem + row.mem
+        tem_pre_disk = tem_disk + row.disk  # 当前磁盘消耗
+        tem_pre_P = tem_P + row.P
+        tem_pre_M = tem_M + row.M
+        tem_pre_PM = tem_PM + row.PM
 
         # if 满足限制表条件，则把当前实例部署到这台主机上。
         if j < 3000:  # 使用小主机
             if is_deploy == True:
                 if tem_pre_disk < tmp_stand_disk1:  # 磁盘够
-                    if restrictApps(instance=df3["instanceid"][i], deploy_list=deploy_list):
+                    if restrictApps(instance=row.instanceid, deploy_list=deploy_list):
                         if tem_pre_mem < tmp_stand_mem1:  # 内存够
                             if tem_pre_cpu < tmp_stand_cpu1:  # CPU够
                                 if tem_pre_M < tmp_stand_M1:
@@ -152,35 +146,35 @@ def deployInstance(row):
                                         if tem_pre_PM < tmp_stand_PM1:
                                             # 条件都满足，则把instance放入主机，同时df3表中去掉这个部署好的一行
                                             result = result.append(pd.DataFrame(
-                                                [{"instanceid": df3["instanceid"][i],
+                                                [{"instanceid": row.instanceid,
                                                   "machineid": "machine_" + str(j)}]))
-                                            tem_disk = tem_disk + df3["disk"][i]
-                                            tem_mem = tem_mem + df3["mem"][i]
-                                            tem_cpu = tem_cpu + df3["cpu"][i]
-                                            tem_P = tem_P + df3["P"][i]
-                                            tem_M = tem_M + df3["M"][i]
-                                            tem_PM = tem_PM + df3["PM"][i]
+                                            tem_disk = tem_disk + row.disk
+                                            tem_mem = tem_mem + row.mem
+                                            tem_cpu = tem_cpu + row.cpu
+                                            tem_P = tem_P + row.P
+                                            tem_M = tem_M + row.M
+                                            tem_PM = tem_PM + row.PM
                                             df3.loc[i, "isdeploy"] = True
-                                            deploy_list.append(df3["instanceid"][i])
+                                            deploy_list.append(row.instanceid)
 
             else:
                 # 主机j没有部署实例，则先部署一个
                 result = result.append(
-                    pd.DataFrame([{"instanceid": df3["instanceid"][i], "machineid": "machine_" + str(j)}]))
-                tem_disk = tem_disk + df3["disk"][i]
-                tem_mem = tem_mem + df3["mem"][i]
-                tem_cpu = tem_cpu + df3["cpu"][i]
-                tem_P = tem_P + df3["P"][i]
-                tem_M = tem_M + df3["M"][i]
-                tem_PM = tem_PM + df3["PM"][i]
+                    pd.DataFrame([{"instanceid": row.instanceid, "machineid": "machine_" + str(j)}]))
+                tem_disk = tem_disk + row.disk
+                tem_mem = tem_mem + row.mem
+                tem_cpu = tem_cpu + row.cpu
+                tem_P = tem_P + row.P
+                tem_M = tem_M + row.M
+                tem_PM = tem_PM + row.PM
                 df3.loc[i, "isdeploy"] = True
-                deploy_list.append(df3["instanceid"][i])
+                deploy_list.append(row.instanceid)
                 # df3["isdeploy"][i] = True
                 is_deploy = True
         else:  # 使用大主机
             if is_deploy == True:
                 if tem_pre_disk < tmp_stand_disk2:  # 磁盘够
-                    if restrictApps(instance=df3["instanceid"][i], deploy_list=deploy_list):
+                    if restrictApps(instance=row.instanceid, deploy_list=deploy_list):
                         if tem_pre_mem < tmp_stand_mem2:  # 内存够
                             if tem_pre_cpu < tmp_stand_cpu2:  # CPU够
                                 if tem_pre_M < tmp_stand_M2:
@@ -188,30 +182,30 @@ def deployInstance(row):
                                         if tem_pre_PM < tmp_stand_PM2:
                                             # 条件都满足，则把instance放入主机
                                             result = result.append(pd.DataFrame(
-                                                [{"instanceid": df3["instanceid"][i],
+                                                [{"instanceid": row.instanceid,
                                                   "machineid": "machine_" + str(j)}]))
-                                            tem_disk = tem_disk + df3["disk"][i]
-                                            tem_mem = tem_mem + df3["mem"][i]
-                                            tem_cpu = tem_cpu + df3["cpu"][i]
-                                            tem_P = tem_P + df3["P"][i]
-                                            tem_M = tem_M + df3["M"][i]
-                                            tem_PM = tem_PM + df3["PM"][i]
+                                            tem_disk = tem_disk + row.disk
+                                            tem_mem = tem_mem + row.mem
+                                            tem_cpu = tem_cpu + row.cpu
+                                            tem_P = tem_P + row.P
+                                            tem_M = tem_M + row.M
+                                            tem_PM = tem_PM + row.PM
                                             df3.loc[i, "isdeploy"] = True
-                                            deploy_list.append(df3["instanceid"][i])
+                                            deploy_list.append(row.instanceid)
 
             else:
                 # 主机j没有部署实例，则先部署一个
                 result = result.append(
-                    pd.DataFrame([{"instanceid": df3["instanceid"][i], "machineid": "machine_" + str(j)}]))
-                tem_disk = tem_disk + df3["disk"][i]
-                tem_mem = tem_mem + df3["mem"][i]
-                tem_cpu = tem_cpu + df3["cpu"][i]
-                tem_P = tem_P + df3["P"][i]
-                tem_M = tem_M + df3["M"][i]
-                tem_PM = tem_PM + df3["PM"][i]
+                    pd.DataFrame([{"instanceid": row.instanceid, "machineid": "machine_" + str(j)}]))
+                tem_disk = tem_disk + row.disk
+                tem_mem = tem_mem + row.mem
+                tem_cpu = tem_cpu + row.cpu
+                tem_P = tem_P + row.P
+                tem_M = tem_M + row.M
+                tem_PM = tem_PM + row.PM
                 df3.loc[i, "isdeploy"] = True
-                deploy_list.append(df3["instanceid"][i])
+                deploy_list.append(row.instanceid)
                 is_deploy = True
 
-# 跑
+
 deploy()
