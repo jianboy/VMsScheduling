@@ -28,7 +28,8 @@ instance = cf.get(section_name, "instance")
 df1 = pd.read_csv(app_resources, encoding="utf-8")
 
 # instance
-df3 = pd.read_csv(instance)
+# df3 = pd.read_csv(instance)
+df3 = pd.read_csv("../data/test-instance.csv")
 
 df3["cpu"] = df3["cpu"].astype("float")
 df3["disk"] = df3["disk"].astype("float")
@@ -113,6 +114,9 @@ def deploy():
         tem_pre_disk = tem_pre_mem = tem_pre_cpu = tem_pre_P = tem_pre_M = tem_pre_PM = 0
         tem_disk = tem_mem = tem_cpu = tem_P = tem_M = tem_PM = 0
         deploy_list = list()
+        print("剩余部署Instance数据：", row)
+        print("已经消耗Machine主机数据：", j)
+        print("已经消耗时间：", time.time() - start, "秒")
 
     # 部署完事
     print("------------部署完啦--------------")
