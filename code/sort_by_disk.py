@@ -77,14 +77,20 @@ def restrictApps(instance, deploy_list):
     else:
         ct = pd.Series(deploy_list).value_counts()
         for k, v in ct.items():
+            # tmp表示在df4中找到限制条件一行
             tmp = df4.loc[(df4["appid1"] == k) & (df4["appid2"] == instance)]
             row, col = tmp.shape
-            if row > 0:
-                if ct[instance] + 1 > tmp["max_interference"]:
-                    return False
+            if k == instance:
+                # a a 2 表示有一个a前提，还可以放2个a，最多可以放3个a
+                if row > 0:
+                    if ct[instance] > tmp["max_interference"]:
+                        return False
             else:
-                # 在限制表中找不到限制条件
-                return True
+                # a b 2 表示有一个a前提，还可以放2个b，最多可以放2个b
+                if row > 0:
+                    if ct[instance] + 1 > tmp["max_interference"]:
+                        return False
+        return True
 
 
 # 执行部署方案
