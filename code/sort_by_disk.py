@@ -28,8 +28,8 @@ instance = cf.get(section_name, "instance")
 df1 = pd.read_csv(app_resources, encoding="utf-8")
 
 # instance
-# df3 = pd.read_csv(instance)
-df3 = pd.read_csv("../data/test-instance.csv")
+df3 = pd.read_csv(instance)
+#df3 = pd.read_csv("../data/test-instance.csv")
 
 df3["cpu"] = df3["cpu"].astype("float")
 df3["disk"] = df3["disk"].astype("float")
