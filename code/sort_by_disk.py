@@ -151,12 +151,12 @@ def deployInstance():
         if j > 3000:  # 使用小主机
             if is_deploy:
                 if tem_pre_disk <= tmp_stand_disk1:  # 磁盘够
-                    if restrict_apps(instance=row.instanceid, deploy_list=deploy_list):
-                        if tem_pre_mem < tmp_stand_mem1:  # 内存够
-                            if tem_pre_cpu < tmp_stand_cpu1:  # CPU够
-                                if tem_pre_M <= tmp_stand_M1:
-                                    if tem_pre_P <= tmp_stand_P:
-                                        if tem_pre_PM <= tmp_stand_PM1:
+                    if tem_pre_mem < tmp_stand_mem1:  # 内存够
+                        if tem_pre_cpu < tmp_stand_cpu1:  # CPU够
+                            if tem_pre_M <= tmp_stand_M1:
+                                if tem_pre_P <= tmp_stand_P:
+                                    if tem_pre_PM <= tmp_stand_PM1:
+                                        if restrict_apps(instance=row.instanceid, deploy_list=deploy_list):
                                             # 条件都满足，则把instance放入主机，同时df3表中去掉这个部署好的一行
                                             result = result.append(pd.DataFrame(
                                                 [{"instanceid": row.instanceid,
@@ -187,12 +187,12 @@ def deployInstance():
         else:  # 使用大主机
             if is_deploy:
                 if tem_pre_disk <= tmp_stand_disk2:  # 磁盘够
-                    if restrict_apps(instance=row.instanceid, deploy_list=deploy_list):
-                        if tem_pre_mem < tmp_stand_mem2:  # 内存够
-                            if tem_pre_cpu < tmp_stand_cpu2:  # CPU够
-                                if tem_pre_M <= tmp_stand_M2:
-                                    if tem_pre_P <= tmp_stand_P:
-                                        if tem_pre_PM <= tmp_stand_PM2:
+                    if tem_pre_mem < tmp_stand_mem2:  # 内存够
+                        if tem_pre_cpu < tmp_stand_cpu2:  # CPU够
+                            if tem_pre_M <= tmp_stand_M2:
+                                if tem_pre_P <= tmp_stand_P:
+                                    if tem_pre_PM <= tmp_stand_PM2:
+                                        if restrict_apps(instance=row.instanceid, deploy_list=deploy_list):
                                             # 条件都满足，则把instance放入主机
                                             result = result.append(pd.DataFrame(
                                                 [{"instanceid": row.instanceid,
