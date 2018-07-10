@@ -27,3 +27,11 @@ export PYTHONPATH=$PYTHONPATH:/root/ServerManager
 ssh://liuyuqi@localhost:2201/home/liuyuqi/anaconda3/envs/py36/bin/python -u /home/liuyuqi/workspace/ServerManager/code/data_preview.py -dAgg
 
 ```
+
+## 测试：
+```angular2html
+
+mvn package -Dmaven.test.skip=ture
+java -cp xxx.jar com.aliyun.tianchi.mgr.evaluate.evaluate.file.evaluator.AlibabaSchedulerEvaluatorRun data/app_resources.csv data/machine_resources.csv data/instance_deploy.csv data/app_interference.csv submit/result.csv
+
+```
