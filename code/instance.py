@@ -6,11 +6,10 @@
 @Time :2018/7/6 16:13
 @File :instance.py
 '''
-import matplotlib
 
-matplotlib.use('Agg')
-import pandas as pd
 from configparser import ConfigParser
+
+import pandas as pd
 
 cf = ConfigParser()
 config_path = "../conf/config.ini"
@@ -54,6 +53,6 @@ for i in range(0, int(cf.get("table_size", "instance_size"))):
     df3["PM"][i] = df1[df1["appid"] == df3["appid"][i]]["PM"].values[0]
 
 # ascending=False 降序
-df3.sort_values(ascending=False, by="disk")
+df3 = df3.sort_values(ascending=False, by="disk")
 
 df3.to_csv("../data/instance.csv")

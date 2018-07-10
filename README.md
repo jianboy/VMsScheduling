@@ -15,12 +15,14 @@ export export PATH=/root/anaconda3/bin:$PATH
 
 sh Anaconda3-5.2.0-Linux-x86_64.sh
 
-pip install -r requirementstxt
+
 
 ```
 ## 运行：
 ```angular2html
 #远程执行：
+pip install -r requirementstxt
+
 export PYTHONPATH=$PYTHONPATH:/root/ServerManager
 ssh://liuyuqi@localhost:2201/home/liuyuqi/anaconda3/envs/py36/bin/python -u /home/liuyuqi/workspace/ServerManager/code/data_preview.py -dAgg
 
