@@ -82,13 +82,18 @@ def restrict_apps(instance, deploy_list):
             tmp = df4.loc[(df4["appid1"] == k) & (df4["appid2"] == instance)]
             row, col = tmp.shape
             if row > 0:
-                if k == instance:
-                    # a a 2 表示有一个a前提，还可以放2个a，最多可以放3个a
-                    if ct[instance] > tmp["max_interference"].values[0]:
-                        return False
+                if instance in ct.index:
+                    if k == instance:
+                        # a a 2 表示有一个a前提，还可以放2个a，最多可以放3个a
+                        if ct[instance] > tmp["max_interference"].values[0]:
+                            return False
+                    else:
+                        # a b 2 表示有一个a前提，还可以放2个b，最多可以放2个b
+                        if ct[instance] + 1 > tmp["max_interference"].values[0]:
+                            return False
                 else:
-                    # a b 2 表示有一个a前提，还可以放2个b，最多可以放2个b
-                    if ct[instance] + 1 > tmp["max_interference"].values[0]:
+                    # a e 2 表示有一个a前提，还可以放2个e，最多可以放2个b ct[instance]=0
+                    if 1 > tmp["max_interference"].values[0]:
                         return False
         return True
 
