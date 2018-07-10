@@ -65,7 +65,7 @@ tmp_stand_PM1 = 7
 tmp_stand_PM2 = 9
 
 machine_count = 0  # 3000小机器，3000大机器。所以在小机器用完换大机器
-j = 1  # j表示主机序号，从1-3000，3001到6000
+j = 6000  # j表示主机序号，从1-3000，3001到6000
 is_deploy = False  # 主机j是否部署了instance
 deploy_list = list()  # 主机j部署的instanceid实例
 
@@ -112,7 +112,7 @@ def deploy():
         df3 = df3[df3["isdeploy"] == False]
         row, column = df3.shape
         df3 = df3.reset_index(drop=True)
-        j = j + 1
+        j = j - 1
         # j++之后表示新建主机，所以新主机没有部署任何实例，为false，然后初始化所有其他参数
         is_deploy = False
         tem_pre_disk = tem_pre_mem = tem_pre_cpu = tem_pre_P = tem_pre_M = tem_pre_PM = 0
@@ -148,16 +148,16 @@ def deployInstance():
         tem_pre_PM = tem_PM + row.PM
 
         # if 满足限制表条件，则把当前实例部署到这台主机上。
-        if j > 3000:  # 使用小主机
+        if j > 3000:  # 使用大主机
             if is_deploy:
-                if tem_pre_disk <= tmp_stand_disk1:  # 磁盘够
-                    if tem_pre_mem < tmp_stand_mem1:  # 内存够
-                        if tem_pre_cpu < tmp_stand_cpu1:  # CPU够
-                            if tem_pre_M <= tmp_stand_M1:
+                if tem_pre_disk <= tmp_stand_disk2:  # 磁盘够
+                    if tem_pre_mem < tmp_stand_mem2:  # 内存够
+                        if tem_pre_cpu < tmp_stand_cpu2:  # CPU够
+                            if tem_pre_M <= tmp_stand_M2:
                                 if tem_pre_P <= tmp_stand_P:
-                                    if tem_pre_PM <= tmp_stand_PM1:
+                                    if tem_pre_PM <= tmp_stand_PM2:
                                         if restrict_apps(instance=row.instanceid, deploy_list=deploy_list):
-                                            # 条件都满足，则把instance放入主机，同时df3表中去掉这个部署好的一行
+                                            # 条件都满足，则把instance放入主机
                                             result = result.append(pd.DataFrame(
                                                 [{"instanceid": row.instanceid,
                                                   "machineid": "machine_" + str(j)}]))
@@ -182,18 +182,17 @@ def deployInstance():
                 tem_PM = tem_PM + row.PM
                 df3.loc[i, "isdeploy"] = True
                 deploy_list.append(row.instanceid)
-                # df3["isdeploy"][i] = True
                 is_deploy = True
-        else:  # 使用大主机
+        else:  # 使用小主机
             if is_deploy:
-                if tem_pre_disk <= tmp_stand_disk2:  # 磁盘够
-                    if tem_pre_mem < tmp_stand_mem2:  # 内存够
-                        if tem_pre_cpu < tmp_stand_cpu2:  # CPU够
-                            if tem_pre_M <= tmp_stand_M2:
+                if tem_pre_disk <= tmp_stand_disk1:  # 磁盘够
+                    if tem_pre_mem < tmp_stand_mem1:  # 内存够
+                        if tem_pre_cpu < tmp_stand_cpu1:  # CPU够
+                            if tem_pre_M <= tmp_stand_M1:
                                 if tem_pre_P <= tmp_stand_P:
-                                    if tem_pre_PM <= tmp_stand_PM2:
+                                    if tem_pre_PM <= tmp_stand_PM1:
                                         if restrict_apps(instance=row.instanceid, deploy_list=deploy_list):
-                                            # 条件都满足，则把instance放入主机
+                                            # 条件都满足，则把instance放入主机，同时df3表中去掉这个部署好的一行
                                             result = result.append(pd.DataFrame(
                                                 [{"instanceid": row.instanceid,
                                                   "machineid": "machine_" + str(j)}]))

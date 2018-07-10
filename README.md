@@ -32,6 +32,6 @@ ssh://liuyuqi@localhost:2201/home/liuyuqi/anaconda3/envs/py36/bin/python -u /hom
 ```angular2html
 
 mvn package -Dmaven.test.skip=ture
-java -cp xxx.jar com.aliyun.tianchi.mgr.evaluate.evaluate.file.evaluator.AlibabaSchedulerEvaluatorRun data/app_resources.csv data/machine_resources.csv data/instance_deploy.csv data/app_interference.csv submit/result.csv
+java -cp AlibabaSchedulerEvaluator.jar com.aliyun.tianchi.mgr.evaluate.evaluate.file.evaluator.AlibabaSchedulerEvaluatorRun app_resources.csv machine_resources.csv instance_deploy.csv app_interference.csv result.csv
 
 ```
