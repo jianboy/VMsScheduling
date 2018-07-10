@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 按照磁盘占用率从大到小装箱，即按照磁盘先用完为止进行分配实例到主机。
 @Auther :liuyuqi.gov@msn.cn
 @Time :2018/7/7 0:43
 @File :sort_by_disk.py
-'''
+"""
 
 import matplotlib
 
@@ -29,7 +29,7 @@ df1 = pd.read_csv(app_resources, encoding="utf-8")
 
 # instance
 df3 = pd.read_csv(instance)
-#df3 = pd.read_csv("../data/test-instance.csv")
+# df3 = pd.read_csv("../data/test-instance.csv")
 
 df3["cpu"] = df3["cpu"].astype("float")
 df3["disk"] = df3["disk"].astype("float")
@@ -56,7 +56,7 @@ tmp_stand_disk1 = 600
 
 tmp_stand_cpu2 = 92
 tmp_stand_mem2 = 288
-tmp_stand_disk2 = 600
+tmp_stand_disk2 = 1024
 
 tmp_stand_P = 7
 tmp_stand_M1 = 3
@@ -71,7 +71,7 @@ deploy_list = list()  # 主机j部署的instanceid实例
 
 
 # 各app之间的限制
-def restrictApps(instance, deploy_list):
+def restrict_apps(instance, deploy_list):
     len_list = len(deploy_list)
     if len_list == 0:
         return True
@@ -81,15 +81,14 @@ def restrictApps(instance, deploy_list):
             # tmp表示在df4中找到限制条件一行
             tmp = df4.loc[(df4["appid1"] == k) & (df4["appid2"] == instance)]
             row, col = tmp.shape
-            if k == instance:
-                # a a 2 表示有一个a前提，还可以放2个a，最多可以放3个a
-                if row > 0:
-                    if ct[instance] > tmp["max_interference"]:
+            if row > 0:
+                if k == instance:
+                    # a a 2 表示有一个a前提，还可以放2个a，最多可以放3个a
+                    if ct[instance] > tmp["max_interference"].values[0]:
                         return False
-            else:
-                # a b 2 表示有一个a前提，还可以放2个b，最多可以放2个b
-                if row > 0:
-                    if ct[instance] + 1 > tmp["max_interference"]:
+                else:
+                    # a b 2 表示有一个a前提，还可以放2个b，最多可以放2个b
+                    if ct[instance] + 1 > tmp["max_interference"].values[0]:
                         return False
         return True
 
@@ -114,7 +113,7 @@ def deploy():
         tem_pre_disk = tem_pre_mem = tem_pre_cpu = tem_pre_P = tem_pre_M = tem_pre_PM = 0
         tem_disk = tem_mem = tem_cpu = tem_P = tem_M = tem_PM = 0
         deploy_list = list()
-        print("剩余部署Instance数据：", row)
+        print("已经部署：", 68219 - row, "剩余部署Instance数据：", row)
         print("已经消耗Machine主机数据：", j)
         print("已经消耗时间：", time.time() - start, "秒")
 
@@ -128,13 +127,12 @@ def deploy():
 
 
 def deployInstance():
-    '''
+    """
     根据限制部署实例到主机上
-    :param row: 根据剩余的instance数量循环
-    :param j: 第j台主机
     :return: 暂未定返回值，None
-    '''
-    global is_deploy, tem_mem, tem_cpu, tem_disk, tem_P, tem_M, tem_PM, tem_pre_disk, tem_pre_mem, tem_pre_cpu, tem_pre_P, tem_pre_M, tem_pre_PM, result, j, df3, deploy_list
+    """
+    global is_deploy, tem_mem, tem_cpu, tem_disk, tem_P, tem_M, tem_PM, tem_pre_disk, \
+        tem_pre_mem, tem_pre_cpu, tem_pre_P, tem_pre_M, tem_pre_PM, result, j, df3, deploy_list
     for row in df3.itertuples():
         i = row.Index
         tem_pre_cpu = tem_cpu + row.cpu
@@ -145,15 +143,15 @@ def deployInstance():
         tem_pre_PM = tem_PM + row.PM
 
         # if 满足限制表条件，则把当前实例部署到这台主机上。
-        if j < 3000:  # 使用小主机
-            if is_deploy == True:
-                if tem_pre_disk < tmp_stand_disk1:  # 磁盘够
-                    if restrictApps(instance=row.instanceid, deploy_list=deploy_list):
+        if j > 3000:  # 使用小主机
+            if is_deploy:
+                if tem_pre_disk <= tmp_stand_disk1:  # 磁盘够
+                    if restrict_apps(instance=row.instanceid, deploy_list=deploy_list):
                         if tem_pre_mem < tmp_stand_mem1:  # 内存够
                             if tem_pre_cpu < tmp_stand_cpu1:  # CPU够
-                                if tem_pre_M < tmp_stand_M1:
-                                    if tem_pre_P < tmp_stand_P:
-                                        if tem_pre_PM < tmp_stand_PM1:
+                                if tem_pre_M <= tmp_stand_M1:
+                                    if tem_pre_P <= tmp_stand_P:
+                                        if tem_pre_PM <= tmp_stand_PM1:
                                             # 条件都满足，则把instance放入主机，同时df3表中去掉这个部署好的一行
                                             result = result.append(pd.DataFrame(
                                                 [{"instanceid": row.instanceid,
@@ -182,14 +180,14 @@ def deployInstance():
                 # df3["isdeploy"][i] = True
                 is_deploy = True
         else:  # 使用大主机
-            if is_deploy == True:
-                if tem_pre_disk < tmp_stand_disk2:  # 磁盘够
-                    if restrictApps(instance=row.instanceid, deploy_list=deploy_list):
+            if is_deploy:
+                if tem_pre_disk <= tmp_stand_disk2:  # 磁盘够
+                    if restrict_apps(instance=row.instanceid, deploy_list=deploy_list):
                         if tem_pre_mem < tmp_stand_mem2:  # 内存够
                             if tem_pre_cpu < tmp_stand_cpu2:  # CPU够
-                                if tem_pre_M < tmp_stand_M2:
-                                    if tem_pre_P < tmp_stand_P:
-                                        if tem_pre_PM < tmp_stand_PM2:
+                                if tem_pre_M <= tmp_stand_M2:
+                                    if tem_pre_P <= tmp_stand_P:
+                                        if tem_pre_PM <= tmp_stand_PM2:
                                             # 条件都满足，则把instance放入主机
                                             result = result.append(pd.DataFrame(
                                                 [{"instanceid": row.instanceid,
