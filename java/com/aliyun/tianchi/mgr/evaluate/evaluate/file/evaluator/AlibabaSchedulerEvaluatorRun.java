@@ -309,6 +309,11 @@ public class AlibabaSchedulerEvaluatorRun {
         
         InputStream problem;
         InputStream result;
+//        app_resources.csv 
+//        machine_resources.csv 
+//        instance_deploy.csv 
+//        app_interference.csv 
+//        result.csv
         if (args.length == 5) {
             // 将赛题拼成评测数据
             StringBuffer sb = new StringBuffer();
