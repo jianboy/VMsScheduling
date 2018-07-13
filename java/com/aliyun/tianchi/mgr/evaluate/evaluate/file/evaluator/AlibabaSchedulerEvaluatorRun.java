@@ -1,28 +1,23 @@
 package com.aliyun.tianchi.mgr.evaluate.evaluate.file.evaluator;
 
 
-import java.util.List;
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.io.BufferedReader;
-
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.InputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
-import com.google.common.base.Charsets;
-import org.apache.commons.lang3.tuple.Pair;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.google.common.base.Charsets;
 
 /**
  * Created by mou.sunm on 2018/07/02.
