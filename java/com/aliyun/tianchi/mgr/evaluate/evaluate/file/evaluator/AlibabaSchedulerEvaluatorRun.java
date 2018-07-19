@@ -40,9 +40,10 @@ public class AlibabaSchedulerEvaluatorRun {
     private String[]                apps;
     private String[]                machines;
     private Map<String, Integer>    inst2AppIndex;
-    private double[][]              appResources;  
-    private double[][]              machineResources;  
-    private Map<Integer, Integer>[] appInterference;
+    
+    private double[][]              appResources;//app  
+    private double[][]              machineResources;//主机  
+    private Map<Integer, Integer>[] appInterference;//限制条件
     
     // 动态数据
     private Map<String, Integer>       inst2Machine;
@@ -52,7 +53,7 @@ public class AlibabaSchedulerEvaluatorRun {
     protected double evaluate(BufferedReader bufferedReader) throws IOException {
         double costs = 0.;
         try {
-            /** 读取执行数据 */
+            /** 读取执行数据 execs:[(inst_65379,5999), (inst_62243,5998)] */
             List<Pair<String, Integer>> execs = new ArrayList<Pair<String, Integer>>();
             for (String line = bufferedReader.readLine(); line != null; line = bufferedReader.readLine()) {
                 String[] pair = line.split(",", -1);
@@ -69,8 +70,8 @@ public class AlibabaSchedulerEvaluatorRun {
                     //System.out.println("超过EXECUTION LIMIT(" + EXEC_LIMIT+"), 执行中断");
                     //break;
                 //}
-                String  inst        = exec.getLeft();
-                Integer machineIt   = exec.getRight();
+                String  inst        = exec.getLeft();//key:inst_65379
+                Integer machineIt   = exec.getRight();//value:5999
                 pickInstance(inst); // 先将inst从当前所属的machine删除
                 String msg = toMachine(inst, machineIt);
                 if (!msg.equals("success")) {
@@ -129,42 +130,42 @@ public class AlibabaSchedulerEvaluatorRun {
             judge framework 
         */
         /** cpuIter */
-        cpuIter = new ArrayList<Integer>();
+        cpuIter = new ArrayList<Integer>();//1,2,3....98
         for (int i = 0; i < T; i++)
             cpuIter.add(i);
         /** Read app_resources */
-        n = Integer.parseInt(bufferedReader.readLine());
+        n = Integer.parseInt(bufferedReader.readLine());//9338
         apps = new String[n];
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {//循环app表每一行
             // appId,resources
             String line = bufferedReader.readLine();
             String[] parts = line.split(",", -1);
             List<Double> resources = new ArrayList<Double>();
-            for (String x : parts[1].split("\\|", -1))
+            for (String x : parts[1].split("\\|", -1))//cpu
                 resources.add(Double.parseDouble(x));
-            for (String x : parts[2].split("\\|", -1))
+            for (String x : parts[2].split("\\|", -1))//mem
                 resources.add(Double.parseDouble(x));
-            for (int j = 3; j < parts.length; j++)
+            for (int j = 3; j < parts.length; j++) //disk/P/M/PM
                 resources.add(Double.parseDouble(parts[j]));
             if (i == 0) {
-                k = resources.size();
+                k = resources.size();//200
                 appIndex = new HashMap<String, Integer>();
-                appResources = new double[n][k];
+                appResources = new double[n][k];//9338*200
             }
             if (k != resources.size()) 
                 throw new IOException("[DEBUG 2]Invaild problem");
             if (appIndex.containsKey(parts[0]))
                 throw new IOException("[DEBUG 3]Invaild problem");
-            appIndex.put(parts[0], i);
-            apps[i] = parts[0];
+            appIndex.put(parts[0], i+1);//{app_5269=5268, app_5267=5266, app_6598=6597}
+            apps[i] = parts[0];//appid [app_1, app_2, app_3, app_4]
             for (int j = 0; j < k; j++)
                 appResources[i][j] = resources.get(j);
         }
         /** Read machine_resources*/
-        m = Integer.parseInt(bufferedReader.readLine());
+        m = Integer.parseInt(bufferedReader.readLine());//6000
         machineResources = new double[m][k];
         machineResourcesUsed = new double[m][k];
-        machineIndex = new HashMap<String, Integer>();
+        machineIndex = new HashMap<String, Integer>();//{machine_3791=3790, machine_3792=3791}
         machineHasApp = new Map[m];
         machines = new String[m];
         for (int i = 0; i < m; i++) {
@@ -173,7 +174,7 @@ public class AlibabaSchedulerEvaluatorRun {
             String[] parts = line.split(",", -1);
             if (machineIndex.containsKey(parts[0]))
                 throw new IOException("[DEBUG 4]Invaild problem");
-            machineIndex.put(parts[0], i);
+            machineIndex.put(parts[0], i+1);
             machines[i] = parts[0];
             machineHasApp[i] = new HashMap<Integer, Integer>();
             double cpu = Double.parseDouble(parts[1]);
@@ -188,7 +189,7 @@ public class AlibabaSchedulerEvaluatorRun {
                 machineResourcesUsed[i][j] = 0.;
         }
         /** Read instance_deploy */
-        N = Integer.parseInt(bufferedReader.readLine());
+        N = Integer.parseInt(bufferedReader.readLine());//68219
         inst2AppIndex = new HashMap<String, Integer>();
         inst2Machine  = new HashMap<String, Integer>();
         for (int i = 0; i < N; i++) {
@@ -206,7 +207,7 @@ public class AlibabaSchedulerEvaluatorRun {
             }
         }
         /** Read app_interference */
-        int icnt = Integer.parseInt(bufferedReader.readLine());
+        int icnt = Integer.parseInt(bufferedReader.readLine());//35242
         appInterference = new Map[n];
         for (int i = 0; i < n; i++)
             appInterference[i] = new HashMap<Integer, Integer>();

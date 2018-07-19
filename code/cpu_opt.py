@@ -5,7 +5,7 @@
 @Time :2018/7/9 7:54
 @File :cpu_opt.py
 '''
-
+import pandas as pd
 
 
 def getWij():

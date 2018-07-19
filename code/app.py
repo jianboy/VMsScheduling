@@ -37,6 +37,10 @@ df1["mem_avg"] = None
 
 # expand=True表示
 tmp = df1["cpu"].str.split('|', expand=True).astype('float')
+print(type(tmp))
+print(tmp.index)
+print(type(tmp[1]))
+exit(1)
 # [9338 rows x 98 columns]
 df1["cpu_avg"] = tmp.T.mean().T  # 转置,求均值，再转置回来，这样求得一行的均值。
 

@@ -57,16 +57,27 @@ def t5():
 
 
 def t6():
+    '''
+    切片：
+    :return:
+    '''
     df = pd.DataFrame([{"A": "11", "B": "12"}, {"A": "111", "B": "121"}, {"A": "1111", "B": "1211"}])
 
     print(df)
     print(df.columns.size)  # 列数 2
     h, l = df.shape
-    print(h, l)
+    print(h, l)  # 3,2
     print(df.iloc[:, 0].size)  # 行数 3
     print(df.ix[[0]].index.values[0])  # 索引值 0
     print(df.ix[[0]].values[0][0])  # 第一行第一列的值 11
     print(df.ix[[1]].values[0][1])  # 第二行第二列的值 121
+    print(df.A, df.B)
+    print(df["A"], df["B"])
+    print(df.loc["A"])
+    print(df.loc[df["A"] > 1])
+    print(df.loc[pd.isna(df["A"])] == False)
+    print(df[df.isna["A"]] == False)  # .loc可以省略
+    # iloc和loc：iloc按0，1，2，3等索引每行；loc按每列的列名索引
 
 
 def t7():
@@ -98,13 +109,42 @@ def t8():
 
 # DataFrame循环遍历
 def t9():
-    df = pd.DataFrame({'a': [1, 2, 3], 'b': [3, 4, 5]})
+    df = pd.DataFrame({'a': [1, 2, 3], 'b': [3, 4, "C"]})
     for row in df.itertuples():
-        print("the index", row.Index)
-    print("sum of row", row.a + row.b)
+        print(row.a, row.b)
+
+    for row in df.items():
+        print(row[1][0], row[1][1], row[1][2])
+
+    # 不推荐
+    for row in df.iteritems():
+        print(row[1][0], row[1][1], row[1][2])
+
+    # 不推荐
+    for row in df:
+        print(df[row][0], df[row][1], df[row][2])
 
 
-t9()
+def t10():
+    for i in range(10):
+        print(i)
+
+
+def t11():
+    '''
+
+    :return:
+    '''
+    df = pd.DataFrame({'a': [1, 2, 3], 'b': [3, 4, "C"]})
+    print(df)
+    df1 = df
+    df2 = df.copy() #正确
+    df1.a = [2, 2, 2]  # 直接使用=只传址，df,df1任何更改，两个变量都更改
+    df.b = [3, 3, 3]
+    print(df1)
+
+
+t11()
 
 # result = pd.DataFrame(columns=list(["instanceid", "machineid"]), data=list())
 
