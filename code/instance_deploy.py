@@ -29,5 +29,10 @@ df3 = pd.read_csv(instance_deploy, header=None,
 # print(df3.head())
 
 print(pd.isna(df3["machineid"]).value_counts())
+print(pd.isna(df3.machineid[1]))
+print(pd.isna(df3["machineid"][2]))
+print(df3.machineid[1]=="nan")#错误
+print(df3.machineid[1]=="NaN")
+
 # True     38223
 # False    29996 还有一半没有部署
