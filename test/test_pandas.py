@@ -138,13 +138,41 @@ def t11():
     df = pd.DataFrame({'a': [1, 2, 3], 'b': [3, 4, "C"]})
     print(df)
     df1 = df
-    df2 = df.copy() #正确
+    df2 = df.copy()  # 正确
     df1.a = [2, 2, 2]  # 直接使用=只传址，df,df1任何更改，两个变量都更改
     df.b = [3, 3, 3]
     print(df1)
 
 
-t11()
+def t12():
+    '''
+    字符分割1 appid原来字符表示，现在去掉app_，直接用后缀数字表示。
+    '''
+    df = pd.DataFrame({'appid': ["app_1", "app_2", "app_3"], 'cpu': [3, 4, "C"]},
+                      columns=list(["appid", "cpu"]))
+    # tmp = pd.to_numeric(df["appid"].str.split("_", expand=True)[1].values)
+    # df[['col2', 'col3']] = df[['col2', 'col3']].apply(pd.to_numeric)
+    df["appid"] = pd.to_numeric(df["appid"].str.split("_", expand=True)[1].values)
+    print(df)
+
+
+def t13():
+    '''
+    字符串分割2
+    :return:
+    '''
+    s = pd.DataFrame(['a,b,c', 'c,d,e'])
+    print(s)
+
+    temp_expend_False = s[0].str.split(',')
+    print(temp_expend_False)
+
+    temp_expend_True = s[0].str.split(',', expand=True)
+    print(temp_expend_True)
+    print(temp_expend_True[1].values)
+
+
+t12()
 
 # result = pd.DataFrame(columns=list(["instanceid", "machineid"]), data=list())
 

@@ -6,8 +6,7 @@
 @File :save_result.py
 '''
 
-import datetime
-
+import datetime.datetime
 import pandas as pd
 
 
@@ -22,5 +21,18 @@ def save_result(df):
     # data = [["ss", "aa"], ["ss", "aa"], ["ss", "aa"], ["ss", "aa"]]
 
     # df = pd.DataFrame(data, columns=head)
-    df.to_csv(("../submit/submit_" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + ".csv"), header=None,
+    df.to_csv(("../submit/submit_" + datetime.now().strftime('%Y%m%d_%H%M%S') + ".csv"), header=None,
               index=False)
+
+
+def marge_ab(df_a, df_b):
+    '''
+    合并数据，并导出
+    :param df_a:
+    :param df_b:
+    :return:
+    '''
+    path_ab = "submit_" + datetime.now().strftime('%Y%m%d_%H%M%S') + ".csv"
+    df_ab = pd.merge(df_a, df_b)
+
+    df_ab.to_csv(path_ab, header=None, index=False)
