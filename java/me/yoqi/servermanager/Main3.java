@@ -12,17 +12,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Charsets;
 
 /**
- * b数据优化空间很大，所以修改toMachine()函数，依据CPU最优进行分配 。 Created by liuyuqi.gov@msn.cn on
- * 2018/07/02.
+ * 不考虑迁移代价而不断迁移，跑b数据9746。 Created by liuyuqi.gov@msn.cn on 2018/07/02.
  */
-public class Main {
+public class Main3 {
 	// 参数
 	public static final double alpha = 10.;
 	public static final double beta = 0.5;
@@ -44,7 +42,6 @@ public class Main {
 	private Map<String, Integer> inst2AppIndex;// {inst_157=49}
 
 	private double[][] appResources;// app 9338*200
-	private LinkedHashMap<String, Double> appCPU = new LinkedHashMap<String, Double>();
 	private double[][] machineResources;// 主机 6000*200
 	private Map<Integer, Integer>[] appInterference;// 9338 限制条件[{}, {},
 													// {3517=2}, {}, {5600=1,
@@ -64,56 +61,36 @@ public class Main {
 	 * 先对disk排序，然后first fit
 	 * 
 	 * @throws IOException
-	 *             读，写文件异常
+	 *             写文件异常
 	 */
 	private void run() throws IOException {
-		// 1、对instance实例按照cpu使用率(98个点的均值)降序排列。
-		int count = 0;
-		File file = new File("resb/app_cpu.csv");
-		BufferedReader br = new BufferedReader(new FileReader(file));
-//		while((len = br.readLine()) != null){ }
-		for (int i = 0; i < num_inst; i++) {
-			String line = br.readLine();
-			String[] parts = line.split(",", -1);
-			appCPU.put(parts[0], Double.valueOf(parts[1]));
-		}
-		br.close();
-		// 2、为每个machine主机预留一定CPU空间
-
-		// 3、first fit策略将inst放到machine中
+		// 主机优先顺序，使用过的主机在前，目的紧凑；然后大主机在前。做一个主机优先部署序列
 		String tmp_Res;
 		String inst_tmp = null;
 		int time_count = 0;
-		long startTime = System.currentTimeMillis();
+		long startTime=System.currentTimeMillis();
 		long cost_time = 0;
-		boolean flag = false;
-		for (Map.Entry<String, Double> entry : appCPU.entrySet()) {
+		for (Map.Entry<String, Integer> entry : inst2AppIndex.entrySet()) {
 			// 判断是否部署过，如果部署过则重新部署
-			flag = false;
 			inst_tmp = entry.getKey();
 			if (inst2Machine.containsKey(inst_tmp)) {
-				pickInstance(inst_tmp);
+				pickInstance(entry.getKey());
 			}
 			for (int i = num_mac - 1; i >= 0; i--) {
 				tmp_Res = toMachine(inst_tmp, i);
 				if (tmp_Res == "success") {
 					deployResult.add(inst_tmp + "," + "machine_" + (i + 1));
-					flag = true;
 					break;
 				}
-			}
-			if (flag == false) {
-				System.out.println(time_count);
 			}
 			time_count++;
 			if (time_count % 5000 == 0) {
 				cost_time = System.currentTimeMillis() - startTime;
-				System.out.println("已经部署：" + time_count + "  剩余部署：" + (num_inst - time_count));
-				System.out.println("预估剩余时间：" + ((cost_time / 1000) * (num_inst - time_count) / time_count) + "s");
+				System.out.println("已经部署：" + time_count+"  剩余部署：" + (num_inst - time_count));
+				System.out.println("预估剩余时间：" + ((cost_time / 1000) * (num_inst - time_count) / time_count)+"s");
 			}
 		}
 		saveResult(deployResult);
-
 	}
 
 	// 读取数据
@@ -284,24 +261,6 @@ public class Main {
 		return "success";
 	}
 
-	private String deployByCPU(String inst, int machineIt) {
-		int appIt = inst2AppIndex.get(inst);
-		Map<Integer, Integer> hasApp = machineHasApp[machineIt];
-		String res_tmp = doCheck(inst, machineIt);
-		if (res_tmp != "success") {
-			return res_tmp;
-		}
-		// 将inst放入新的machine
-		inst2Machine.put(inst, machineIt);
-		if (!hasApp.containsKey(appIt))
-			hasApp.put(appIt, 0);
-		hasApp.put(appIt, hasApp.get(appIt) + 1);
-		for (int i = 0; i < num_k; i++)
-			machineResourcesUsed[machineIt][i] += appResources[appIt][i];
-
-		return "success";
-	}
-
 	private String toMachine(String inst, int machineIt, boolean doCheck) {
 		int appIt = inst2AppIndex.get(inst);
 		Map<Integer, Integer> hasApp = machineHasApp[machineIt];
@@ -399,7 +358,7 @@ public class Main {
 		}
 
 		// 评测
-		Main evaluator = new Main();
+		Main3 evaluator = new Main3();
 		evaluator.init(new BufferedReader(new InputStreamReader(problem, Charsets.UTF_8)));
 		System.out.println("默认已经部署了：" + evaluator.inst2Machine.size());
 		evaluator.run();
