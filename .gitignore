@@ -70,3 +70,8 @@ target/
 /dataset
 /.Rproj.user
 /.settings
+/res
+/resb
+/.Rhistory
+/.pydevproject
+/*.Rproj

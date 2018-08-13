@@ -279,6 +279,7 @@ if __name__ == '__main__':
     scheduling = Scheduling()
     # 加载数据
     scheduling.loadData()
+    print("加载数据耗时:", time.time() - start)
     # 开始调度
     scheduling.run(start)
     # 部署完事

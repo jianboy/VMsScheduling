@@ -17,10 +17,10 @@ import java.util.Map;
 
 import com.google.common.base.Charsets;
 
-/**
- * 不考虑迁移代价而不断迁移，跑b数据9746。 Created by liuyuqi.gov@msn.cn on 2018/07/02.
+/**默认不迁移，初始代码。跑a数据分数6148
+ * Created by mou.sunm on 2018/07/02.
  */
-public class Main {
+public class Main2 {
 	// 参数
 	public static final double alpha = 10.;
 	public static final double beta = 0.5;
@@ -36,7 +36,7 @@ public class Main {
 	private Map<String, Integer> appIndex; // app_1,app_2字符串用0,1等数字替换，{app_1=0,
 											// app_2=1,...,app_4=3}
 	private Map<String, Integer> machineIndex;// {machine_1=0, machine_2=1,
-	private List<Integer> machinePriorIndex = new ArrayList<Integer>();
+	private List<Integer> machinePriorIndex=new ArrayList<Integer>();
 	private String[] apps; // [app_1, app_2, app_3, app_4,
 	private String[] machines;// [machine_1, machine_2, machine_3, machine_4,
 	private Map<String, Integer> inst2AppIndex;// {inst_157=49}
@@ -52,7 +52,6 @@ public class Main {
 	// 这个数据类型和Map<String, Integer>有点区别，加上list会保存顺序
 	private List<String> deployResult = new ArrayList<String>(); // [inst_33717,5456
 	private List<String> instUnDelpoy = new ArrayList<String>();// 未部署的实例
-	private List<String> instSortByDisk = new ArrayList<String>();// 未部署的实例
 	private Map<String, Integer> inst2MachineDefaultConflict = new HashMap<String, Integer>();;// 记录初始部署冲突的实例和主机
 	private double[][] machineResourcesUsed;// 6000*200
 	private Map<Integer, Integer>[] machineHasApp;// 6000 [{}, {},{6004=1,
@@ -66,33 +65,52 @@ public class Main {
 	 *             写文件异常
 	 */
 	private void run() throws IOException {
-		// 主机优先顺序，使用过的主机在前，目的紧凑；然后大主机在前。做一个主机优先部署序列
+//		主机优先顺序，使用过的主机在前，目的紧凑；然后大主机在前。做一个主机优先部署序列
+		
+		
+		// 对默认实例有冲突的进行迁移
 		String tmp_Res;
 		String inst_tmp = null;
-		int time_count = 0;
-		long startTime=System.currentTimeMillis();
-		long cost_time = 0;
-		for (Map.Entry<String, Integer> entry : inst2AppIndex.entrySet()) {
-			// 判断是否部署过，如果部署过则重新部署
-			inst_tmp = entry.getKey();
-			if (inst2Machine.containsKey(inst_tmp)) {
-				pickInstance(entry.getKey());
-			}
-			for (int i = num_mac - 1; i >= 0; i--) {
-				tmp_Res = toMachine(inst_tmp, i);
+		int machineIt_tmp = 0;
+		for (Map.Entry<String, Integer> entry : inst2MachineDefaultConflict.entrySet()) {
+			// 将实例先迁移出来，释放资源
+			pickInstance(entry.getKey());
+			for (Map.Entry<String, Integer> entry2 : machineIndex.entrySet()) {
+				inst_tmp = entry.getKey();
+				machineIt_tmp = entry2.getValue();
+				tmp_Res = toMachine(inst_tmp, machineIt_tmp);
 				if (tmp_Res == "success") {
-					deployResult.add(inst_tmp + "," + "machine_" + (i + 1));
+					deployResult.add(inst_tmp + "," + "machine_" + (machineIt_tmp + 1));
 					break;
 				}
 			}
-			time_count++;
-			if (time_count % 5000 == 0) {
-				cost_time = System.currentTimeMillis() - startTime;
-				System.out.println("已经部署：" + time_count+"  剩余部署：" + (num_inst - time_count));
-				System.out.println("预估剩余时间：" + ((cost_time / 1000) * (num_inst - time_count) / time_count)+"s");
+		}
+		System.out.println("默认冲突数：" + inst2MachineDefaultConflict.size());
+		System.out.println("剩余未部署：" + instUnDelpoy.size());
+		//对剩余未部署的实例进行部署
+
+		for (int i = 0; i < instUnDelpoy.size(); i++) {
+			for (Map.Entry<String, Integer> entry2 : machineIndex.entrySet()) {
+				inst_tmp = instUnDelpoy.get(i);
+				machineIt_tmp = entry2.getValue();
+				tmp_Res = toMachine(inst_tmp, machineIt_tmp);
+				if (tmp_Res == "success") {
+					deployResult.add(inst_tmp + "," + "machine_" + (machineIt_tmp + 1));
+					break;
+				}
 			}
 		}
 		saveResult(deployResult);
+	}
+
+	private void sortInstanceByDisk(ArrayList<Integer> instance) {
+		for (int i = 0; i < instance.size(); i++) {
+			inst2AppIndex.get(i);
+		}
+	}
+
+	private void sort(ArrayList<Integer> list) {
+
 	}
 
 	// 读取数据
@@ -156,6 +174,23 @@ public class Main {
 				machineResourcesUsed[i][j] = 0.;
 
 		}
+		// // 倒序排列，大主机在前面
+		// List<Map.Entry<String, Integer>> list_tmp = new ArrayList<>();
+		// for (Map.Entry<String, Integer> entry : machineIndex.entrySet()) {
+		// list_tmp.add(entry); // 将map中的元素放入list中
+		// }
+		// list_tmp.sort(new Comparator<Map.Entry<String, Integer>>() {
+		// @Override
+		// public int compare(Map.Entry<String, Integer> o1, Map.Entry<String,
+		// Integer> o2) {
+		// return o2.getValue() - o1.getValue();
+		// }
+		// // 逆序（从大到小）排列，正序为“return o1.getValue()-o2.getValue”
+		// });
+		// machineIndex.clear();
+		// for (Map.Entry<String, Integer> entry : list_tmp) {
+		// machineIndex.put(entry.getKey(), entry.getValue());
+		// }
 		/** Read app_interference */
 		int icnt = Integer.parseInt(bufferedReader.readLine());// 35242
 		appInterference = new Map[num_app];
@@ -323,6 +358,10 @@ public class Main {
 			writer.write(res.get(i));
 			writer.newLine();
 		}
+		// for (String line : res) {
+		// writer.write(line);
+		// writer.newLine();
+		// }
 		writer.close();
 	}
 
@@ -360,7 +399,7 @@ public class Main {
 		}
 
 		// 评测
-		Main evaluator = new Main();
+		Main2 evaluator = new Main2();
 		evaluator.init(new BufferedReader(new InputStreamReader(problem, Charsets.UTF_8)));
 		System.out.println("默认已经部署了：" + evaluator.inst2Machine.size());
 		evaluator.run();
